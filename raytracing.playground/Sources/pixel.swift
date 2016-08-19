@@ -48,11 +48,7 @@ public func imageFromPixels(width: Int, height: Int, ns: Int) -> CIImage {
     let lookAt = float3()
     let cam = Camera(lookFrom: lookFrom, lookAt: lookAt, vup: float3(0, -1, 0), vfov: 15, aspect: Float(width) / Float(height))
     let world = random_scene()
-/*        replace the outer for loop with the two lines below
-    let queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) //let queue = DispatchQueue.GlobalQueuePriority.default
-    dispatch_apply(width, queue) { i in
-*/
-    for i in 0..<width {
+    DispatchQueue.concurrentPerform(iterations: width) { i in
         for j in 0..<height {
             var col = float3()
             for _ in 0..<ns {
@@ -71,7 +67,7 @@ public func imageFromPixels(width: Int, height: Int, ns: Int) -> CIImage {
     let bitsPerPixel = 32
     let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
     let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
-    let providerRef = CGDataProvider(data: NSData(bytes: pixels, length: pixels.count * sizeof(Pixel.self)))
-    let image = CGImage(width: width, height: height, bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerPixel, bytesPerRow: width * sizeof(Pixel.self), space: rgbColorSpace, bitmapInfo: bitmapInfo, provider: providerRef!, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+    let providerRef = CGDataProvider(data: NSData(bytes: pixels, length: pixels.count * MemoryLayout<Pixel>.size))
+    let image = CGImage(width: width, height: height, bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerPixel, bytesPerRow: width * MemoryLayout<Pixel>.size, space: rgbColorSpace, bitmapInfo: bitmapInfo, provider: providerRef!, decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
     return CIImage(cgImage: image!)
 }
